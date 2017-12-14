@@ -2,6 +2,8 @@ package com.kinopoisk.controller;
 
 import com.kinopoisk.model.Actor;
 import com.kinopoisk.repository.ActorRepository;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,32 +26,48 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
+
+@Api(value = "/Actors", description = "Manage actors")
 public class ActorController {
 
     @Autowired
     ActorRepository actorRepository;
 
     @GetMapping("/actors")
-    public List<Actor> getAllActors(){return actorRepository.findAll();}
+    @ApiOperation(value = "List all Actors")
+    public List<Actor> getAllActors() {
+        return actorRepository.findAll();
+    }
 
     @GetMapping("/actors/{id}")
-    public ResponseEntity<Actor> getActorById(@PathVariable(value = "id") Long actorId){
+    @ApiOperation(
+            value = "Get Actor by Id"
+    )
+    public ResponseEntity<Actor> getActorById(@PathVariable(value = "id") Long actorId) {
         Actor actor = actorRepository.findOne(actorId);
-        if (actor == null){
+        if (actor == null) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok().body(actor);
     }
 
     @PostMapping("/actors")
-    public Actor createActor(@Valid @RequestBody Actor actor){return actorRepository.save(actor);}
+    @ApiOperation(
+            value = "Create new actor"
+    )
+    public Actor createActor(@Valid @RequestBody Actor actor) {
+        return actorRepository.save(actor);
+    }
 
 
     @PutMapping("/actors/{id}")
+    @ApiOperation(
+            value = "Update existing Actor"
+    )
     public ResponseEntity<Actor> updateActor(@PathVariable(value = "id") Long actorId,
-                                             @Valid @RequestBody Actor actorDetails){
+                                             @Valid @RequestBody Actor actorDetails) {
         Actor actor = actorRepository.findOne(actorId);
-        if (actor == null){
+        if (actor == null) {
             return ResponseEntity.notFound().build();
         }
         actor.setFullName(actorDetails.getFullName());
@@ -62,9 +80,10 @@ public class ActorController {
     }
 
     @DeleteMapping("/actors/{id}")
-    public ResponseEntity<Actor> deleteActor(@PathVariable(value = "id") Long actorId){
+    @ApiOperation(value = "Delete existing Actor")
+    public ResponseEntity<Actor> deleteActor(@PathVariable(value = "id") Long actorId) {
         Actor actor = actorRepository.findOne(actorId);
-        if (actor == null){
+        if (actor == null) {
             return ResponseEntity.notFound().build();
         }
 
@@ -72,9 +91,10 @@ public class ActorController {
         return ResponseEntity.ok().build();
     }
 
-   @GetMapping("actors/status")
-    public ResponseEntity status(){
-       return ResponseEntity.status(200).body("Actor Service is available");
-}
+    @GetMapping("actors/status")
+    @ApiOperation(value = "Check API status")
+    public ResponseEntity status() {
+        return ResponseEntity.status(200).body("Actor Service is available");
+    }
 
 }
