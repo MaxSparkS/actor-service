@@ -1,7 +1,9 @@
 package com.kinopoisk.controller;
 
 import com.kinopoisk.model.Actor;
+import com.kinopoisk.model.ActorDto;
 import com.kinopoisk.repository.ActorRepository;
+import com.kinopoisk.services.ConvertApplication;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,25 +33,38 @@ import java.util.List;
 @Api(value = "/Actors", description = "Manage actors")
 public class ActorController {
 
+    ConvertApplication convertApplication;
+
     @Autowired
     ActorRepository actorRepository;
 
     @GetMapping("/actors")
     @ApiOperation(value = "List all Actors")
-    public List<Actor> getAllActors() {
-        return actorRepository.findAll();
+    public List<ActorDto> getAllActors() {
+        convertApplication = new ConvertApplication();
+        List<Actor> actorList = actorRepository.findAll();
+        List<ActorDto> actorDtoList = new ArrayList<>();
+        if (!actorList.isEmpty()){
+            for (Actor actor : actorList) {
+                actorDtoList.add(convertApplication.parseActorToActorDto(actor));
+            }
+        }
+        return actorDtoList;
     }
 
     @GetMapping("/actors/{id}")
     @ApiOperation(
             value = "Get Actor by Id"
     )
-    public ResponseEntity<Actor> getActorById(@PathVariable(value = "id") Long actorId) {
+    public ResponseEntity<ActorDto> getActorById(@PathVariable(value = "id") Long actorId) {
+        convertApplication = new ConvertApplication();
         Actor actor = actorRepository.findOne(actorId);
         if (actor == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok().body(actor);
+        ActorDto actorDto = convertApplication.parseActorToActorDto(actor);
+
+        return ResponseEntity.ok().body(actorDto);
     }
 
     @PostMapping("/actors")
