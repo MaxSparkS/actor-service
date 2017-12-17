@@ -1,6 +1,7 @@
 package com.kinopoisk.model;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Max Shkurko on 16.12.2017.
@@ -18,6 +19,8 @@ public class ActorDto {
     private String biography;
 
     public boolean isFavorite;
+
+    private List films;
 
     public long getId() {
         return id;
@@ -61,5 +64,13 @@ public class ActorDto {
 
     public void setFavorite(boolean favorite) {
         isFavorite = favorite;
+    }
+
+    public List getFilms() {
+        return films;
+    }
+
+    public void setFilms(List films) {
+        this.films = films;
     }
 }

@@ -2,7 +2,9 @@ package com.kinopoisk.controller;
 
 import com.kinopoisk.model.Actor;
 import com.kinopoisk.model.ActorDto;
+import com.kinopoisk.model.ActorFilms;
 import com.kinopoisk.repository.ActorRepository;
+import com.kinopoisk.repository.ActorsFilmsRepository;
 import com.kinopoisk.services.ConvertApplication;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -21,6 +23,7 @@ import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
  * Created by Maksim Shkurko on 12/7/2017
  *
@@ -36,26 +39,36 @@ public class ActorController {
     ConvertApplication convertApplication;
 
     @Autowired
+    ActorsFilmsRepository actorsFilmsRepository;
+    @Autowired
     ActorRepository actorRepository;
 
     @GetMapping("/actors")
     @ApiOperation(value = "List all Actors")
-    public List<ActorDto> getAllActors() {
+    public List<ActorDto> getAllActors() throws Exception {
         convertApplication = new ConvertApplication();
         List<Actor> actorList = actorRepository.findAll();
         List<ActorDto> actorDtoList = new ArrayList<>();
-        if (!actorList.isEmpty()){
+        List<ActorFilms> list = actorsFilmsRepository.findAll();
+        if (!actorList.isEmpty()) {
             for (Actor actor : actorList) {
-                actorDtoList.add(convertApplication.parseActorToActorDto(actor));
+                List films = new ArrayList();
+                ActorDto actorDto;
+                actorDto = convertApplication.parseActorToActorDto(actor);
+                for (ActorFilms actorFilms : list) {
+                    if (actor.getId() == actorFilms.getActors_id()) {
+                        films.add(convertApplication.getFilmDto(actorFilms.getFilms_id()));
+                    }
+                }
+                actorDto.setFilms(films);
+                actorDtoList.add(actorDto);
             }
         }
         return actorDtoList;
     }
 
     @GetMapping("/actors/{id}")
-    @ApiOperation(
-            value = "Get Actor by Id"
-    )
+    @ApiOperation(value = "Get Actor by Id")
     public ResponseEntity<ActorDto> getActorById(@PathVariable(value = "id") Long actorId) {
         convertApplication = new ConvertApplication();
         Actor actor = actorRepository.findOne(actorId);
@@ -63,7 +76,14 @@ public class ActorController {
             return ResponseEntity.notFound().build();
         }
         ActorDto actorDto = convertApplication.parseActorToActorDto(actor);
-
+        List films = new ArrayList();
+        List<ActorFilms> list = actorsFilmsRepository.findAll();
+        for (ActorFilms actorFilms : list) {
+            if (actor.getId() == actorFilms.getActors_id()) {
+                films.add(convertApplication.getFilmDto(actorFilms.getFilms_id()));
+            }
+        }
+        actorDto.setFilms(films);
         return ResponseEntity.ok().body(actorDto);
     }
 
